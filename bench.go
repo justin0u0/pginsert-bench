@@ -14,6 +14,7 @@ type inserter interface {
 	insert(ctx context.Context, pgc *pgx.Conn, c *config) (time.Duration, error)
 }
 
+// INSERT INTO table (cols1, cols2, ...) VALUES (...); INSERT INTO table (cols1, cols2, ...) VALUES (...); ...
 type batchInserter struct{}
 
 var _ inserter = (*batchInserter)(nil)
@@ -48,6 +49,7 @@ func (*batchInserter) insert(ctx context.Context, pgc *pgx.Conn, c *config) (tim
 	return time.Since(start), nil
 }
 
+// COPY table (cols1, cols2, ...) FROM ...;
 type copyInserter struct{}
 
 var _ inserter = (*copyInserter)(nil)
@@ -73,6 +75,7 @@ func (*copyInserter) insert(ctx context.Context, pgc *pgx.Conn, c *config) (time
 	return time.Since(start), nil
 }
 
+// INSERT INTO table (cols1, cols2, ...) VALUES (...), (...), ...;
 type valuesInserter struct{}
 
 var _ inserter = (*valuesInserter)(nil)
@@ -99,6 +102,7 @@ func (*valuesInserter) insert(ctx context.Context, pgc *pgx.Conn, c *config) (ti
 	return time.Since(start), nil
 }
 
+// INSERT INTO table (cols1, cols2, ...) SELECT * FROM UNNEST(cols1::BIGINT[], cols2::BIGINT[], ...);
 type unnestInserter struct{}
 
 var _ inserter = (*unnestInserter)(nil)
